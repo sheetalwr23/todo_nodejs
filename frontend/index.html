@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <form  onsubmit="SubmitForm(event)">
+        <div>
+            <label for="item">Todo thing</label>
+            <input type="text" id="Todo" name="name" placeholder="what do you want to do"></br>
+            
+            <label for="price">Description</label>
+            <input type="text" id="Description" name="name" placeholder="requirements"></br>
+    
+            <button type="submit">Add Item</button>
+        </div>
+        <div>
+            <ul id="ul">
+            </ul>
+        </div>
+        <div id="things_done">
+           <h3>Things done:</h2>
+        </div>
+        <div id="things_remaining">
+          <h3>Things remaining:</h2>
+        </div>
+    </form>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
+    <script>
+         const url = "http://localhost:3005/api/todo";
+
+       async function SubmitForm(event)
+        {
+            event.preventDefault();
+        const Todo=document.getElementById("Todo").value;
+        const Description=document.getElementById("Description").value;
+        let obj={
+            Todo,Description
+        };
+        
+        try {
+            const postedData = await axios.post(url, obj);
+            showDetails(obj);
+         console.log("hello",postedData.data);
+          console.log(postedData.data);
+        } catch (error) {
+          console.log("this is axios post error", error);
+        }
+      
+    }
+    window.addEventListener("DOMContentLoaded", async () => {
+        try {
+          const getData = await axios.get(url);
+          console.log("data fetched successfully", getData.data);
+          getData.data.forEach((singledata) => {
+            showDetails(singledata);
+          });
+        } catch (err) {
+          console.log("cant get data", err);
+        }
+      });
+
+      function showDetails(obj) {
+        const parent = document.getElementById("ul");
+        const child = document.createElement("li");
+        console.log(obj);
+        child.textContent = `todo:${obj.Todo},desc:${obj.Description}`;
+        parent.appendChild(child);
+
+        // delete button;
+        const btn = document.createElement("input");
+        btn.type = "button";
+        btn.value = "delete";
+        child.appendChild(btn);
+  
+        btn.onclick = async () => {
+          const res = await axios.delete(`${url}/${obj.id}`);
+          console.log("deleted", res.data);
+          parent.removeChild(child);
+          const things_done=document.getElementById("things_done");
+          things_done.appendChild(child);
+          child.removeChild(btn);
+
+        }
+
+          //done button
+    const done_btn = document.createElement("input");
+          done_btn.type = "button";
+          done_btn.value = "done";
+        child.appendChild(done_btn);
+
+        done_btn.onclick = async () => {
+          const res = await axios.delete(`${url}/${obj.id}`);
+          console.log("deleted", res.data);
+          parent.removeChild(child);
+          const things_remaining =document.getElementById("things_remaining");
+          things_remaining.appendChild(child);
+          child.removeChild(done_btn)
+        };
+
+        
+      }
+    
+    </script>
+    </body>
+    </html>
